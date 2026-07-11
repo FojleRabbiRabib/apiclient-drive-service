@@ -9,6 +9,12 @@
         "issues": "https://github.com/FojleRabbiRabib/apiclient-drive-service/issues",
         "source": "https://github.com/FojleRabbiRabib/apiclient-drive-service"
     },
+    "authors": [
+        {
+            "name": "Fojle Rabbi (Rabib)",
+            "homepage": "https://github.com/FojleRabbiRabib"
+        }
+    ],
     "require": {
         "php": "^8.1"
     },
