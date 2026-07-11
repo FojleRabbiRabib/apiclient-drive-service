@@ -113,11 +113,13 @@ Versioning is SemVer, decided manually on merge: PATCH (cosmetic), MINOR (additi
 
 ## Distribution constraints
 
-- `conflict` with `google/apiclient-services` (not `provide`/`replace`) — masquerading as the full
-  catalog would let Composer resolve cleanly and then fatal-error at runtime. **Known caveat:**
-  conflict-without-`provide` currently makes the package uninstallable alongside `google/apiclient`
-  (which hard-requires `apiclient-services`) — adding `provide: { google/apiclient-services: "*" }`
-  is the verified fix and is under consideration.
+- `conflict` **and** `provide` for `google/apiclient-services`. The `provide` lets `google/apiclient`
+  (which hard-requires `apiclient-services`) install alongside this package; the `conflict` excludes
+  the *real* `apiclient-services` so there are no duplicate `Google\Service\Drive` classes. A
+  consumer who needs a *different* service (Sheets, etc.) gets a clear "class not found" — they
+  should use the full `google/apiclient-services` instead of this package. (Conflict-only was the
+  original plan, but it made the package uninstallable with `google/apiclient`; provide is the
+  verified fix.)
 - `.gitattributes` `export-ignore`s `/.github`, `/tools`, `/tests`, `/CLAUDE.md`, etc. so the
   Composer dist archive ships runtime code + legal docs only. `composer.lock` is intentionally not
   committed (this is a library, not an application).

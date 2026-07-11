@@ -15,15 +15,18 @@ automatically, on a weekly schedule, opening a pull request for review.
 ## Install
 
 ```bash
-composer require fojlerabbirabib/apiclient-drive-service
+composer require fojlerabbirabib/apiclient-drive-service google/apiclient
 ```
 
-This package requires `google/apiclient` for the base `Google\Client` / HTTP / auth layer — the
-same core library the official service catalog depends on.
+This package ships the Drive service classes; `google/apiclient` ships the `Google\Client` /
+HTTP / auth base layer they extend. This package `provide`s `google/apiclient-services` and
+`conflict`s the real one, so Composer installs `google/apiclient` **without** the 200MB full
+service catalog — only the Drive classes ship.
 
-> Don't require this alongside `google/apiclient-services` — both provide the same
-> `Google\Service\Drive` namespace and will conflict. Composer will refuse the combination
-> rather than let them collide silently at runtime.
+> Don't also require `google/apiclient-services` directly — it registers the same
+> `Google\Service\Drive` namespace from a different file and Composer will refuse the
+> combination. If you need other Google services, use `google/apiclient-services` instead of
+> this package.
 
 ## Usage
 

@@ -15,8 +15,11 @@
     "conflict": {
         "google/apiclient-services": "*"
     },
+    "provide": {
+        "google/apiclient-services": "*"
+    },
     "suggest": {
-        "google/apiclient": "^2.15 — provides Google\\Client, Google\\Service, Google\\Service\\Resource, Google\\Model, Google\\Collection. NOT a hard require here because google/apiclient's own composer.json hard-requires google/apiclient-services (~0.350), which this package conflicts with — installing both together is unresolvable by design (see NOTICE / README). Either wire up google/apiclient's official Google\\Task\\Composer::cleanup post-install script with an empty keep-list yourself, or bring a different Google\\Client-compatible base."
+        "google/apiclient": "^2.15 — provides the Google\\Client / Google\\Service / Google\\Model / Google\\Collection base classes this package's generated classes extend. Declared as suggest (not require) so consumers pick the version; this package `provide`s google/apiclient-services and `conflict`s the real one, so google/apiclient installs cleanly without pulling the 200MB full catalog."
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",
