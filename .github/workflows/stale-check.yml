@@ -1,0 +1,38 @@
+name: Sync staleness check
+
+on:
+  schedule:
+    # Daily at ~06:27 UTC.
+    - cron: '27 6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if the sync workflow hasn't succeeded in 7 days
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Last *successful* sync.yml run — a no-change week still exits 0,
+          # so this only fires when the workflow genuinely stopped or broke.
+          LAST="$(gh run list --workflow=sync.yml --status=success --limit 1 \
+                  --json createdAt -q '.[0].createdAt' 2>/dev/null || echo '')"
+          if [ -z "$LAST" ]; then
+            echo "::error::No successful sync.yml run found. The weekly sync has never completed — run it manually via the Actions tab (workflow_dispatch)."
+            exit 1
+          fi
+          LAST_TS="$(date -d "$LAST" +%s)"
+          NOW_TS="$(date +%s)"
+          AGE_DAYS=$(( (NOW_TS - LAST_TS) / 86400 ))
+          echo "Last successful sync.yml run: $LAST ($AGE_DAYS days ago)"
+          if [ "$AGE_DAYS" -ge 7 ]; then
+            echo "::error::Last successful sync run is $AGE_DAYS days old (>= 7). The weekly sync may have stopped — check the Actions tab."
+            exit 1
+          fi
+          echo "OK — sync ran $AGE_DAYS day(s) ago."
