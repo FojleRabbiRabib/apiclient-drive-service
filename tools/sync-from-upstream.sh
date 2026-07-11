@@ -42,8 +42,10 @@ UPSTREAM_TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo none)"
 echo "==> Upstream HEAD: $UPSTREAM_SHA (nearest tag: $UPSTREAM_TAG)"
 
 echo "==> Guard 1/3 — no cross-service namespace references"
+# Anchored ($): a real sibling service like Google\Service\DriveActivity must NOT
+# be filtered out as a substring of Google\Service\Drive.
 if grep -rEo "Google\\\\Service\\\\[A-Za-z0-9_]+" "$WORKDIR/src/Drive.php" "$WORKDIR/src/Drive" \
-    | grep -v "Google\\\\Service\\\\Drive" \
+    | grep -vE "Google\\\\Service\\\\Drive$" \
     | grep -vE "Google\\\\Service\\\\(Resource|Exception)$"; then
   echo "::error::Drive now references another service's namespace — needs manual review." >&2
   exit 1

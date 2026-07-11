@@ -14,7 +14,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (full history for the BC check)
+      - name: Checkout (full history)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -66,58 +66,41 @@ jobs:
 
       - name: Commit synced snapshot to a branch
         if: steps.diff.outputs.changed == 'true'
+        env:
+          UPSTREAM_SHA: ${{ steps.fetch.outputs.upstream_sha }}
         run: |
           git config user.name "drive-sync-bot"
           git config user.email "actions@users.noreply.github.com"
-          BRANCH="sync/upstream-${{ steps.fetch.outputs.upstream_sha }}"
+          BRANCH="sync/upstream-${UPSTREAM_SHA:0:7}"
           git checkout -b "$BRANCH"
           git add src/ LICENSE
-          git commit -m "sync(drive): upstream ${{ steps.fetch.outputs.upstream_sha }}"
+          git commit -m "sync(drive): upstream $UPSTREAM_SHA"
 
-      # Best-effort: Roave could not be verified locally (environment quirks
-      # during its internal clone). It is non-blocking — the PR opens either
-      # way, and the reviewer can diff manually. The tests + coverage gate
-      # above is the hard safety net.
-      - name: Backward-compatibility check (synced vs current main)
-        if: steps.diff.outputs.changed == 'true'
-        id: bc
-        continue-on-error: true
-        run: |
-          set +e
-          vendor/bin/roave-backward-compatibility-check --from=origin/main --to=HEAD | tee bc-report.txt
-          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
-
-      - name: Open PR (dry-run — never auto-publishes or tags)
+      # Dry-run: this always opens (or updates) a PR for manual review. It never
+      # auto-tags or publishes. BC checking is intentionally NOT automated here
+      # — Roave could not resolve the google/apiclient base classes (suggest-only
+      # + conflict), so it emitted only spurious breaks. Review the diff instead.
+      - name: Open or update PR
         if: steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UPSTREAM_SHA: ${{ steps.fetch.outputs.upstream_sha }}
-          BC_EXIT: ${{ steps.bc.outputs.exit_code }}
         run: |
           set -euo pipefail
-          if [ "$BC_EXIT" = "0" ]; then
-            BC_STATUS="No breaking changes detected by Roave."
-          else
-            BC_STATUS="**Roave reported breaking changes or could not run — review the diff before merging.**"
-          fi
+          BRANCH="sync/upstream-${UPSTREAM_SHA:0:7}"
           {
             echo "Automated weekly sync of the Drive service from \`googleapis/google-api-php-client-services\`."
             echo ""
             echo "- Upstream commit: \`$UPSTREAM_SHA\`"
-            echo "- Backward-compatibility: $BC_STATUS"
             echo ""
-            echo "This is a **dry-run** workflow — it opens a PR for review and never auto-tags or publishes. Merge to update \`main\`."
-            echo ""
-            echo "<details><summary>Roave backward-compatibility report</summary>"
-            echo ""
-            echo '```'
-            cat bc-report.txt 2>/dev/null || echo "(no report produced)"
-            echo '```'
-            echo ""
-            echo "</details>"
+            echo "This is a **dry-run** workflow — it opens a PR for review and never auto-tags or publishes. Merge to update \`main\`. Review the diff for any breaking API surface (removed/renamed classes, methods, properties, or signature changes) before merging."
           } > pr-body.md
-          BRANCH="sync/upstream-${UPSTREAM_SHA:0:7}"
           git push origin HEAD:"$BRANCH"
-          gh pr create --title "sync(drive): weekly upstream sync $(date -u +%Y-%m-%d)" \
-            --body-file pr-body.md --base main --label sync || \
-            echo "PR may already exist for $BRANCH; branch was updated."
+          gh label create sync --if-not-exists 2>/dev/null || true
+          if gh pr view "$BRANCH" --json url >/dev/null 2>&1; then
+            gh pr edit "$BRANCH" --body-file pr-body.md
+            echo "Updated existing PR for $BRANCH."
+          else
+            gh pr create --title "sync(drive): weekly upstream sync $(date -u +%Y-%m-%d)" \
+              --body-file pr-body.md --base main --label sync
+          fi
