@@ -64,6 +64,7 @@ final class AutoloadSmokeTest extends TestCase
             'Operations' => ['Google\\Service\\Drive\\Resource\\Operations'],
             'Approvals' => ['Google\\Service\\Drive\\Resource\\Approvals'],
             'Accessproposals' => ['Google\\Service\\Drive\\Resource\\Accessproposals'],
+            'Teamdrives' => ['Google\\Service\\Drive\\Resource\\Teamdrives'],
         ];
     }
 
