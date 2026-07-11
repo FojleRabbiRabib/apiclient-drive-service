@@ -42,6 +42,34 @@ $drive = new Drive($client);
 $files = $drive->files->listFiles();
 ```
 
+## Use with masbug/flysystem-google-drive-ext
+
+[`masbug/flysystem-google-drive-ext`](https://github.com/masbug/flysystem-google-drive-ext)
+is a popular Flysystem adapter for Google Drive. It depends on `google/apiclient`,
+which normally drags in the full 200MB `google/apiclient-services` catalog — even
+though the adapter only uses Drive. Pair it with this package and the catalog
+never gets installed.
+
+Require both in one command so Composer sees this package's `provide` up front:
+
+```bash
+composer require masbug/flysystem-google-drive-ext fojlerabbirabib/apiclient-drive-service
+```
+
+That installs `masbug/flysystem-google-drive-ext` + `google/apiclient` + this slim
+package, and excludes `google/apiclient-services` entirely (~200MB saved). The
+adapter works unchanged — it uses `Google\Service\Drive\*` classes, which this
+package ships at the same namespace.
+
+> If you require `masbug/flysystem-google-drive-ext` alone first, Composer pulls
+> the full catalog immediately; you'd then need a second
+> `composer require fojlerabbirabib/apiclient-drive-service` to swap it out.
+> Require both together to avoid downloading the 200MB at all.
+
+The same pattern works for any package that depends on `google/apiclient` for
+Drive only — just don't use it if the project also needs other Google services
+(Sheets, Calendar, …), whose classes won't be present.
+
 ## How this stays up to date
 
 A weekly GitHub Action pulls only the Drive-relevant files from upstream (via a scoped
