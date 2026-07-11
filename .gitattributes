@@ -11,4 +11,5 @@
 /.gitignore export-ignore
 /.editorconfig export-ignore
 /CHANGELOG.md export-ignore
+/CLAUDE.md export-ignore
 /phpunit.xml* export-ignore
