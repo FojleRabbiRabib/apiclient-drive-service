@@ -1,0 +1,19 @@
+apiclient-drive-service
+Copyright 2014 Google Inc.
+
+This project is an unofficial, community-maintained derivative work. It is
+automatically extracted, on a weekly schedule, from the "Drive" service
+classes within:
+
+    googleapis/google-api-php-client-services
+    https://github.com/googleapis/google-api-php-client-services
+
+which is licensed under the Apache License, Version 2.0. Extracted source
+files retain their original per-file copyright headers unmodified.
+
+This project is not affiliated with, endorsed by, or sponsored by Google.
+"Google" and "Google Drive" are trademarks of Google LLC, used here only
+to describe the origin of the underlying code, as permitted under
+Section 6 of the Apache License, Version 2.0.
+
+See CHANGELOG.md for the exact upstream commit each release was synced from.

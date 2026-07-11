@@ -1,0 +1,14 @@
+# Normalize line endings for everything in the repo
+* text=auto eol=lf
+
+# --- Composer dist archive exclusions -----------------------------------
+# `composer require` downloads the "dist" archive, not full git history.
+# Keep it to runtime code + legal/docs only; strip CI, tooling, and dev docs.
+/.github export-ignore
+/tools export-ignore
+/tests export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.editorconfig export-ignore
+/CHANGELOG.md export-ignore
+/phpunit.xml* export-ignore

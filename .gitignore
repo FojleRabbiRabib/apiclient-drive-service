@@ -1,0 +1,23 @@
+# Dependencies
+/vendor/
+
+# This is a library, not an application — lock file is intentionally not committed
+composer.lock
+
+# Test / QA artifacts
+.phpunit.result.cache
+.phpunit.cache/
+/build/
+/coverage/
+
+# Local scratch used by the sync tooling (see tools/)
+/.sync-tmp/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+.mcpgate
