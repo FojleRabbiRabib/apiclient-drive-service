@@ -95,12 +95,13 @@ jobs:
             echo ""
             echo "This is a **dry-run** workflow — it opens a PR for review and never auto-tags or publishes. Merge to update \`main\`. Review the diff for any breaking API surface (removed/renamed classes, methods, properties, or signature changes) before merging."
           } > pr-body.md
-          git push origin HEAD:"$BRANCH"
-          gh label create sync --if-not-exists 2>/dev/null || true
+          # --force: re-runs of the same upstream SHA reuse the branch; overwrite
+          # any previous attempt. This is a bot-managed dry-run branch, never main.
+          git push --force origin HEAD:"$BRANCH"
           if gh pr view "$BRANCH" --json url >/dev/null 2>&1; then
             gh pr edit "$BRANCH" --body-file pr-body.md
             echo "Updated existing PR for $BRANCH."
           else
             gh pr create --title "sync(drive): weekly upstream sync $(date -u +%Y-%m-%d)" \
-              --body-file pr-body.md --base main --label sync
+              --body-file pr-body.md --base main
           fi
