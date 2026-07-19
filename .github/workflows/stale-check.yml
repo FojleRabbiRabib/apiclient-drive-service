@@ -17,12 +17,16 @@ jobs:
       - name: Fail if the sync workflow hasn't succeeded in 7 days
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           # Last *successful* sync.yml run — a no-change week still exits 0,
           # so this only fires when the workflow genuinely stopped or broke.
+          # GH_REPO is required: this job never checks out the repo, so gh has
+          # no git context to infer the target repo from and errors with
+          # "failed to determine base repo" without it.
           LAST="$(gh run list --workflow=sync.yml --status=success --limit 1 \
-                  --json createdAt -q '.[0].createdAt' 2>/dev/null || echo '')"
+                  --json createdAt -q '.[0].createdAt')"
           if [ -z "$LAST" ]; then
             echo "::error::No successful sync.yml run found. The weekly sync has never completed — run it manually via the Actions tab (workflow_dispatch)."
             exit 1
